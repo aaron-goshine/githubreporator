@@ -105,13 +105,15 @@ async function rateRepository(octokit: Octokit, repo: Repository): Promise<Rated
     return { ...repo, rating: Math.round(rating), ratingDetails };
 }
 
-export async function getRatedRepositories(org: string, token: string): Promise<RatedRepository[]> {
+export async function getRatedRepositories(org: string, token: string, page: number = 1): Promise<RatedRepository[]> {
     const octokit = new Octokit({ auth: token });
 
     try {
         const { data: repos } = await octokit.rest.repos.listForOrg({
             org,
             type: 'all',
+            per_page: 10,
+            page,
         });
 
         const ratedRepos = await Promise.all(

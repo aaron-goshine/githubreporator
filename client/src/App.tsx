@@ -47,20 +47,40 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [filterTerm, setFilterTerm] = useState<string>('');
+  const [fromCache, setFromCache] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
 
 
-  const fetchData = async () => {
+  const fetchData = async (pageNum: number, forceRefresh: boolean = false) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchRepositories(organizationName, githubToken);
-      setRepositories(data);
+      const { data, fromCache } = await fetchRepositories(organizationName, githubToken, pageNum, forceRefresh);
+      if (pageNum === 1) {
+        setRepositories(data);
+      } else {
+        setRepositories(prev => [...prev, ...data]);
+      }
+      setFromCache(fromCache);
+      setPage(pageNum);
+      if (data.length < 10) { // Assuming 10 is per_page
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to fetch repositories.');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSearch = () => {
+    setPage(1);
+    setHasMore(true);
+    fetchData(1, false);
+  }
 
   const filteredRepositories = repositories.filter(repo =>
     repo.name.toLowerCase().includes(filterTerm.toLowerCase())
@@ -96,12 +116,21 @@ function App() {
           />
           <Button
             variant="contained"
-            onClick={fetchData}
+            onClick={handleSearch}
             disabled={loading || !githubToken || !organizationName}
             sx={{ mt: 2 }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Get Repositories'}
+            {loading && page === 1 ? <CircularProgress size={24} color="inherit" /> : 'Get Repositories'}
           </Button>
+          {repositories.length > 0 && (
+            <Button
+              variant="outlined"
+              onClick={() => fetchData(1, true)} // Refresh resets to page 1
+              disabled={loading || !githubToken || !organizationName}
+            >
+              Refresh Data
+            </Button>
+          )}
         </Box>
 
         {repositories.length > 0 && (
@@ -115,6 +144,12 @@ function App() {
               variant="outlined"
             />
           </Box>
+        )}
+
+        {fromCache && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Data loaded from cache. Click "Refresh Data" to fetch latest.
+          </Alert>
         )}
 
         {error && (
@@ -156,6 +191,18 @@ function App() {
               </TableBody>
             </Table>
           </TableContainer>
+        )}
+
+        {repositories.length > 0 && hasMore && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => fetchData(page + 1, false)}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Load More'}
+            </Button>
+          </Box>
         )}
       </Container>
     </Box>

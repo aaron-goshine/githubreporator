@@ -13,22 +13,20 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/repositories/:org', async (req, res) => {
-    const { org } = req.params;
-    /*
-     * const token = req.headers.authorization?.split(' ')[1];
-     */
-    const token ="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"
+  const { org } = req.params;
+  const token = req.headers.authorization?.split(' ')[1];
+  const page = parseInt(req.query.page as string) || 1;
+  console.log('Received request for org:', org, 'page:', page);
+  if (!token) {
+    return res.status(401).send('GitHub token is required');
+  }
 
-    if (!token) {
-        return res.status(401).send('GitHub token is required');
-    }
-
-    try {
-        const repos = await getRatedRepositories(org, token);
-        res.json(repos);
-    } catch (error) {
-        res.status(500).send('Error fetching repositories');
-    }
+  try {
+    const repos = await getRatedRepositories(org, token, page);
+    res.json(repos);
+  } catch (error) {
+    res.status(500).send('Error fetching repositories');
+  }
 });
 
 app.listen(port, () => {
