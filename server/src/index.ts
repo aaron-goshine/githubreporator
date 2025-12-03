@@ -14,7 +14,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/repositories/:org', async (req, res) => {
   const { org } = req.params;
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1]?.trim();
   const page = parseInt(req.query.page as string) || 1;
   console.log('Received request for org:', org, 'page:', page);
   if (!token) {
@@ -24,8 +24,11 @@ app.get('/api/repositories/:org', async (req, res) => {
   try {
     const repos = await getRatedRepositories(org, token, page);
     res.json(repos);
-  } catch (error) {
-    res.status(500).send('Error fetching repositories');
+  } catch (error: any) {
+    console.error('Error fetching repositories:', error);
+    const status = error.status || 500;
+    const message = error.message || 'Error fetching repositories';
+    res.status(status).send(message);
   }
 });
 
