@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-ghr-server
+  labels:
+    app: ghr-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ghr-backend
+  template:
+    metadata:
+      labels:
+        app: ghr-backend
+    spec:
+      containers:
+        - name: local-ghr-server
+          image: ghr-server:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080

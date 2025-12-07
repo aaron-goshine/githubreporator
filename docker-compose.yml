@@ -6,7 +6,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
-    container_name: github-reporter-server
+    container_name: ghr-backend-api
+    hostname: ghr-backend-api
 
   client:
     build:

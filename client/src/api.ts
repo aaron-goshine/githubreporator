@@ -21,7 +21,7 @@ interface RatedRepository extends SimpleRepository {
 }
 // --- End of embedded types ---
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = '/api';
 
 const CACHE_PREFIX = 'github_reporter_cache_';
 const CACHE_EXPIRY_MS = 60 * 60 * 1000; // 1 hour

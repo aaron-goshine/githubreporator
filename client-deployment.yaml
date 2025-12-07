@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-ghr-client
+  labels:
+    app: ghr-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ghr-client
+  template:
+    metadata:
+      labels:
+        app: ghr-client
+    spec:
+      containers:
+        - name: local-ghr-client
+          image: ghr-client:v3
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
